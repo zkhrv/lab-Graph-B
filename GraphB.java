@@ -31,11 +31,11 @@ public class GraphB
     private boolean InDepth(int peak, int[][] orig, node[] visited, boolean marker) // Метод InDepth реализует алгоритм поиска в глубину
     {
         visited[peak].visited = true; // Помечаем текущую вершину, как посещенную
-        for (int i = peak, j = 0; j < visited.length; ++j) // Проходим по всем вершинам графа и проверяем их наличие в матрице смежности
+        for (int i = peak, j = 0; j < visited.length; ++j) // Проходим по всем вершинам графа смежным с peak
         {
             if (visited[j].visited == false && orig[i][j] != 0) // Если вершина не посещена и есть ребро в матрице смежности
                 marker=InDepth(j, orig, visited, marker); // Рекурсивно вызываем метод для следующей вершины
-            else if (visited[j].inStak != true && orig[i][j]!=0) // Если вершина еще не находится в стеке и есть ребро в матрице смежности
+            else if (visited[j].inStak != true && orig[i][j]!=0) // Если вершина еще не находится в стеке (но уже была посещена) и есть ребро в матрице смежности
                 marker = false; // Маркер становится ложным, так как найден цикл
         }
         if (marker) // Если маркер все еще истинный, то текущую вершину можно добавить в стек
@@ -48,8 +48,8 @@ public class GraphB
     public ArrayList<node> Fleury(int[][] orig, int start) // Метод Fleury для нахождения Эйлерова цикла
     {
         ArrayList<node> answer = new ArrayList<>(); // Список вершин в Эйлеровом цикле
-        int [] checkVertical = new int[orig[0].length]; // Массив для проверки количества ребер у каждой вершины
-        int[] checkHorizontal = new int[orig[0].length]; //  Массив для проверки количества ребер в каждой вершине
+        int [] checkVertical = new int[orig[0].length]; // Массив для проверки количества ребер входящих в каждую вершину
+        int[] checkHorizontal = new int[orig[0].length]; //  Массив для проверки количества ребер выходящих из каждой вершины
         int[] findBridge = new int[orig[0].length]; // Массив для поиска мостов
         int count=0; // Счетчик ребер в графе
         for (int i=0; i<orig[0].length; ++i) // Цикл по всем вершинам графа
@@ -68,12 +68,12 @@ public class GraphB
         while (count>0) // Пока есть неиспользованные ребра в графе, выполняем цикл
         {
             for (int i=start, j=0; j<orig[0].length; ++j) // Проходим по всем вершинам, связанным с текущей вершиной
-                if (orig[i][j]!=0 && findBridge[j]>1) //Если существует неудаленное ребро между текущей и следующей вершинами, и следующая вершина является мостом
+                if (orig[i][j]!=0 && findBridge[j]>1) //Если существует неудаленное ребро между текущей и следующей вершинами, и следующая вершина не является мостом
                 {
                     orig[i][j]=0; // Удаляем ребро из графа
                     answer.add(new node(i, j)); // Добавляем ребро в ответ
                     start = j; // Устанавливаем новую текущую вершину
-                    --checkHorizontal[i]; // Уменьшаем счетчик ребер для текущей вершины
+                    --checkHorizontal[i]; // Уменьшаем счетчик ребер выходящих из текущей вершины
                     --count; // Уменьшаем общий счетчик ребер
                     break; // Прерываем цикл
                 }
@@ -82,7 +82,7 @@ public class GraphB
                     orig[i][j]=0; // Удаляем ребро из графа
                     answer.add(new node(i, j)); // Добавляем ребро в ответ
                     start = j; // Устанавливаем новую текущую вершину
-                    --checkHorizontal[i]; // Уменьшаем счетчик ребер для текущей вершины
+                    --checkHorizontal[i]; // Уменьшаем счетчик ребер выходящих из текущей вершины
                     --count; // Уменьшаем общий счетчик ребер
                     break; // Прерываем цикл
             }
@@ -110,7 +110,7 @@ public class GraphB
     }
     private ArrayList<Integer> FindEulerPath(int[][] orig, int i, ArrayList<Integer> answer) // Алгоритм поиска Эйлерова пути
     {
-        for (int j=0; j<orig[0].length; ++j) // Проходим по всем вершинам графа
+        for (int j=0; j<orig[0].length; ++j) // Проходим по всем вершинам графа смежным с точкой i
             if (orig[i][j]!=0) // Если между вершинами i и j есть ребро
             {
                 orig[i][j] = 0; //  Удаляем это ребро, чтобы в дальнейшем не посетить его повторно
@@ -123,7 +123,7 @@ public class GraphB
     {
         ArrayList<node> answer = new ArrayList<>(); // Список для ответа
 
-        for (int i=0; i<orig[0].length-1; ++i) //
+        for (int i=0; i<orig[0].length-1; ++i) // Цикл для транспонирования матрицы
             for (int j=i+1; j<orig[0].length; ++j) // Меняем местами строки и столбцы
             {
                 int tmp = orig[i][j]; // меняем элементы местами
@@ -163,7 +163,7 @@ public class GraphB
     {
         visited[peak] = true; // Отмечаем узел как посещенный
         PartOfAnswer.ErgodicСlass.add(peak); // Добавляем узел в эргодический класс
-        for (int j = peak, i = 0; i < visited.length; ++i) // Перебираем все узлы графа
+        for (int j = peak, i = 0; i < visited.length; ++i) // Перебираем все узлы графа, смежные с peak
             if (visited[i]==false && orig[i][j] != 0) // Если узел не посещен и есть ребро между ним и текущим узлом
                 PartOfAnswer = dfs(orig, i, visited, PartOfAnswer); // Рекурсивно вызываем метод dfs для нового узла
         return PartOfAnswer; // Возвращаем эргодический класс
